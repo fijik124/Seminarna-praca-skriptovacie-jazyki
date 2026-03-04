@@ -1,3 +1,22 @@
+ <?php
+    // Use ltrim to remove the leading slash so "/about" becomes "about"
+    $requestedPath = ltrim($_SERVER['REQUEST_URI'], '/');
+    
+    // Fallback to 'home' if the path is empty
+    $page = $requestedPath ?: 'home';
+
+    $routes = [
+      'home'    => __DIR__ . '/pages/home.php',
+      'about'   => __DIR__ . '/pages/about.php',
+      'contact' => __DIR__ . '/pages/contact.php',
+      'login' => __DIR__ . '/pages/login.php',
+      'signup' => __DIR__ . '/pages/signup.php',
+    ];
+
+    // Check if the file exists in our routes, otherwise 404
+    $currentPageFile = $routes[$page] ?? __DIR__ . '/pages/404.php';
+    ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,23 +29,7 @@
     <title>Document</title>
 </head>
 <body>
-    <?php
-    // Use ltrim to remove the leading slash so "/about" becomes "about"
-    $requestedPath = ltrim($_SERVER['REQUEST_URI'], '/');
-    
-    // Fallback to 'home' if the path is empty
-    $page = $requestedPath ?: 'home';
-
-    $routes = [
-      'home'    => __DIR__ . '/pages/home.php',
-      'about'   => __DIR__ . '/pages/about.php',
-      'contact' => __DIR__ . '/pages/contact.php',
-      'login' => __DIR__ . '/pages/login.php',
-    ];
-
-    // Check if the file exists in our routes, otherwise 404
-    $currentPageFile = $routes[$page] ?? __DIR__ . '/pages/404.php';
-    ?>
+   
 
     <?php require __DIR__ . '/components/navbar.php'; ?>
 
