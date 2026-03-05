@@ -13,8 +13,21 @@
       'signup' => __DIR__ . '/pages/signup.php',
     ];
 
+    $pageTitles = [
+      'home' => "Home - All Notes",
+    ];
+
+    
+
     // Check if the file exists in our routes, otherwise 404
     $currentPageFile = $routes[$page] ?? __DIR__ . '/pages/404.php';
+    $title = $pageTitles[$page] ?? "All Notes";
+
+    $devMode = true;
+    include './scripts/init.php'; // Contains the log_to_dev_panel function
+  
+  // Your app logic
+  log_to_dev_panel("Page loaded", "success");
     ?>
 
 <!DOCTYPE html>
@@ -26,7 +39,7 @@
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
 >
-    <title>Document</title>
+    <title><?php $title ?></title>
 </head>
 <body>
    
@@ -38,5 +51,9 @@
         <?php require $currentPageFile; ?>
       </div>
     </main>
+
+    <?php if ($devMode) {
+      require __DIR__ . '/components/devpanel.php';
+    };?>
 </body>
 </html>
