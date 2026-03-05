@@ -1,78 +1,62 @@
-<footer class="footer is-fixed-bottom p-2 has-background-black-bis" style="border-top: 1px solid #444; z-index: 1000;">
-    <div class="container is-fluid">
-        <div class="level">
-            <div class="level-left">
-                <div class="level-item">
-                    <div class="dropdown is-up is-hoverable">
-                        <div class="dropdown-trigger">
-                            <button class="button is-small is-dark is-outlined" aria-haspopup="true">
-                                <span class="icon is-small has-text-<?= $db_connected ? 'success' : 'danger' ?>">
-                                    <i class="fas fa-database"></i>
-                                </span>
-                                <span class="has-text-grey-light">DB: <?= htmlspecialchars($db_name) ?></span>
-                            </button>
+<footer class="fixed-bottom bg-dark border-top border-secondary py-2" style="z-index: 1050; background-color: #0b0b0b !important;">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center justify-content-between">
+            
+            <div class="flex-shrink-0">
+                <div class="dropup">
+                    <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-database me-2 <?= $db_connected ? 'text-success' : 'text-danger' ?>"></i>
+                        <span class="small text-secondary">DB: <?= htmlspecialchars($db_name) ?></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-dark p-3 shadow-lg" style="min-width: 300px; border: 1px solid #444;">
+                        <h6 class="dropdown-header ps-0 text-white border-bottom border-secondary mb-2 pb-2">Database Engine</h6>
+                        
+                        <div class="mb-2">
+                            <span class="badge bg-black text-white border border-secondary">Driver</span>
+                            <span class="badge bg-primary"><?= $db_info['driver'] ?? 'N/A' ?></span>
                         </div>
-                        <div class="dropdown-menu" role="menu" style="min-width: 300px;">
-                            <div class="dropdown-content has-background-dark p-4">
-                                <h6 class="title is-6 has-text-white mb-2">Database Engine</h6>
 
-                                <div class="tags has-addons mb-2">
-                                    <span class="tag is-black">Driver</span>
-                                    <span class="tag is-info"><?= $db_info['driver'] ?? 'N/A' ?></span>
-                                </div>
+                        <div class="small text-secondary">
+                            <p class="mb-1"><strong class="text-white">Host:</strong> <?= htmlspecialchars($db_info['host'] ?? 'N/A') ?></p>
+                            <p class="mb-1"><strong class="text-white">User:</strong> <?= htmlspecialchars($db_info['user'] ?? 'N/A') ?></p>
+                            <p class="mb-1"><strong class="text-white">Server:</strong> <?= htmlspecialchars($db_info['version'] ?? 'N/A') ?></p>
+                            
+                            <hr class="my-2 border-secondary">
+                            
+                            <p class="fst-italic mb-0">
+                                <i class="fas fa-network-wired me-1"></i>
+                                <?= htmlspecialchars($db_info['protocol'] ?? 'No connection') ?>
+                            </p>
+                        </div>
 
-                                <div class="is-size-7 has-text-grey-light">
-                                    <p><strong class="has-text-white">Host:</strong>
-                                        <?= htmlspecialchars($db_info['host'] ?? 'N/A') ?></p>
-                                    <p><strong class="has-text-white">User:</strong>
-                                        <?= htmlspecialchars($db_info['user'] ?? 'N/A') ?></p>
-                                    <p><strong class="has-text-white">Server:</strong>
-                                        <?= htmlspecialchars($db_info['version'] ?? 'N/A') ?></p>
+                        <hr class="dropdown-divider border-secondary">
 
-                                    <hr class="my-2" style="background-color: #444; height: 1px;">
-
-                                    <p class="is-italic has-text-grey">
-                                        <i class="fas fa-network-wired mr-1"></i>
-                                        <?= htmlspecialchars($db_info['protocol'] ?? 'No connection') ?>
-                                    </p>
-                                </div>
-
-                                <hr class="dropdown-divider" style="background-color: #444;">
-
-                                <div class="field is-grouped is-grouped-multiline">
-                                    <div class="control">
-                                        <div class="tags has-addons">
-                                            <span class="tag is-black">PHP</span>
-                                            <span class="tag is-primary"><?= phpversion() ?></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-black text-white border border-secondary">PHP <?= phpversion() ?></span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="level-item" style="flex-grow: 2; margin: 0 30px;">
-                <div class="has-background-black p-2" style="width: 100%; border-radius: 4px; border: 1px solid #333;">
-                    <div id="dev-console" class="is-size-7 is-flex"
-                        style="gap: 5px; height: 35px; overflow-x: auto; white-space: nowrap; align-items: center;">
-
+            <div class="flex-grow-1 mx-4">
+                <div class="bg-black border border-secondary rounded p-1" style="height: 40px; overflow-x: auto; white-space: nowrap;">
+                    <div id="dev-console" class="d-flex align-items-center h-100 px-2 gap-2" style="font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.75rem;">
+                        
                         <?php if (empty($debug_logs)): ?>
-                            <span class="has-text-grey-dark">> System Idle</span>
+                            <span class="text-muted small">> System Idle</span>
                         <?php else: ?>
                             <?php foreach ($debug_logs as $log): ?>
-                                <span class="tag <?= $log['class'] ?> is-clickable" onclick="openDevModal('<?= $log['id'] ?>')"
-                                    style="font-family: monospace;">
-                                    <strong><?= $log['icon'] ?></strong> &nbsp; <?= htmlspecialchars($log['message']) ?>
+                                <span class="badge rounded-pill <?= str_replace('is-', 'text-bg-', $log['class']) ?> p-2 shadow-sm" 
+                                      onclick="openDevModal('<?= $log['id'] ?>')" 
+                                      style="cursor: pointer;">
+                                    <strong class="me-1"><?= $log['icon'] ?></strong> <?= htmlspecialchars($log['message']) ?>
                                 </span>
 
                                 <template id="data-<?= $log['id'] ?>">
-                                    <div class="content">
-                                        <p><strong>Time:</strong> <?= $log['timestamp'] ?></p>
-                                        <p><strong>Message:</strong> <?= htmlspecialchars($log['message']) ?></p>
-                                        <pre
-                                            class="has-background-black has-text-success"><?= htmlspecialchars($log['details']) ?></pre>
+                                    <div class="p-1">
+                                        <p class="mb-1"><strong>Time:</strong> <span class="text-muted"><?= $log['timestamp'] ?></span></p>
+                                        <p class="mb-2"><strong>Message:</strong> <?= htmlspecialchars($log['message']) ?></p>
+                                        <pre class="bg-dark text-success p-3 rounded border border-secondary"><code><?= htmlspecialchars($log['details']) ?></code></pre>
                                     </div>
                                 </template>
                             <?php endforeach; ?>
@@ -81,30 +65,22 @@
                     </div>
                 </div>
             </div>
+
+            <div class="flex-shrink-0" style="width: 120px;"></div>
+
         </div>
     </div>
 </footer>
 
-<div id="dev-modal" class="modal">
-    <div class="modal-background" onclick="closeDevModal()"></div>
-    <div class="modal-card">
-        <header class="modal-card-head py-3">
-            <p class="modal-card-title is-size-5">Log Details</p>
-            <button class="delete" aria-label="close" onclick="closeDevModal()"></button>
-        </header>
-        <section class="modal-card-body" id="modal-content-area">
-        </section>
+<div class="modal fade" id="dev-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border-secondary">
+            <div class="modal-header border-secondary py-2">
+                <h5 class="modal-title fs-6">Log Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-content-area">
+                </div>
+        </div>
     </div>
 </div>
-
-<script>
-    function openDevModal(id) {
-        const data = document.getElementById('data-' + id).innerHTML;
-        document.getElementById('modal-content-area').innerHTML = data;
-        document.getElementById('dev-modal').classList.add('is-active');
-    }
-
-    function closeDevModal() {
-        document.getElementById('dev-modal').classList.remove('is-active');
-    }
-</script>
