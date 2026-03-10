@@ -1,2 +1,1 @@
-<h1 class="title">404</h1>
-<p class="subtitle">Page not found.</p>
+<div class="alert alert-danger">Error: Page not found.</div>

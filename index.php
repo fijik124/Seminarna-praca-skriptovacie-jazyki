@@ -44,11 +44,22 @@
 
     <?php require __DIR__ . '/components/navbar.php'; ?>
 
-    <main class="section">
-      <div class="container">
-        <?php require $currentPageFile; ?>
-      </div>
-    </main>
+    <main data-bs-theme="dark" class="bg-dark text-light min-vh-100 d-flex flex-column">
+    
+    <div class="w-100 py-1 bg-primary bg-gradient shadow-sm mb-4" style="height: 3px;"></div>
+
+    <div class="container flex-grow-1">
+        <div class="content-fade-in mt-5">
+            <?php require $currentPageFile;?>
+        </div>
+    </div>
+
+    <footer class="py-4 mt-auto border-top border-secondary border-opacity-25">
+        <div class="container text-center">
+            <p class="text-secondary small mb-0">&copy; 2026 Student Notes System. All rights reserved.</p>
+        </div>
+    </footer>
+</main>
 
     <?php if ($devMode) {
       require __DIR__ . '/components/devpanel.php';
