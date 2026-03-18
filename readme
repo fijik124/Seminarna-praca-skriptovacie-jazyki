@@ -1,0 +1,94 @@
+PROJEKT: Motocross Track & Race Management System
+
+👉 rozdelenie na 2 časti:
+
+🌍 1. VEREJNÁ ČASŤ (pre jazdcov)
+
+👉 dostupná bez loginu
+
+Funkcie:
+🏍️ Zoznam tratí
+
+názov trate
+
+lokalita
+
+popis
+
+stav (otvorená / zatvorená)
+
+🕒 Otváracie hodiny
+
+dni v týždni
+
+špeciálne dni (závody = zatvorené)
+
+✅ Tréning (zjednodušený – tvoj nápad)
+
+👉 perfektné riešenie:
+
+jazdec klikne: „Prišiel som jazdiť“
+
+uloží sa:
+
+user_id (alebo meno ak bez loginu)
+
+dátum
+
+👉 výsledok:
+
+zoznam jazdcov za deň
+
+štatistika aktivity
+
+📊 Prehľad aktivity
+
+kto chodí najčastejšie
+
+počet návštev
+
+🔐 2. SÚKROMNÁ ČASŤ (admin / organizátor)
+
+👉 login required
+
+🚩 Traťoví komisári (hlavná feature)
+
+registrácia komisára
+
+zoznam komisárov
+
+priradenie na pretek
+
+dochádzka:
+
+✔ prišiel
+
+❌ neprišiel
+
+👉 BONUS:
+
+počet odpracovaných pretekov
+
+🏁 Preteky
+
+vytvorenie preteku
+
+dátum
+
+trať
+
+poznámky
+
+🏍️ Správa tratí
+
+CRUD trate
+
+nastavenie otváracích hodín
+
+👥 Používatelia
+
+admin
+
+organizátor
+
+jazdec
