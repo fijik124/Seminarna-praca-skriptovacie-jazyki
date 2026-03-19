@@ -7,52 +7,29 @@
                 <p class="text-muted small">Join our global community of students today.</p>
             </div>
 
-            <form>
+            <form action="../scripts/register_process.php" method="POST">
                 <div class="row g-2 mb-3">
                     <div class="col-md">
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="firstName" placeholder="First Name">
-                            <label for="firstName">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" placeholder="First Name">
+                            <label for="first_name">First Name</label>
                         </div>
                     </div>
                     <div class="col-md">
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="lastName" placeholder="Last Name">
-                            <label for="lastName">Last Name</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-2 mb-3">
-                    <div class="col-md">
-                        <div class="form-floating">
-                            <select class="form-select" id="schoolSelect">
-                                <option selected>Open to select</option>
-                                <option value="1">High School</option>
-                                <option value="2">University</option>
-                            </select>
-                            <label for="schoolSelect">Your School</label>
-                        </div>
-                    </div>
-                    <div class="col-md">
-                        <div class="form-floating">
-                            <select class="form-select" id="gradeSelect">
-                                <option selected>Open to select</option>
-                                <option value="1">Freshman</option>
-                                <option value="2">Senior</option>
-                            </select>
-                            <label for="gradeSelect">Your Grade</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last Name">
+                            <label for="last_name">Last Name</label>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-floating mb-3">
-                    <input type="email" class="form-control" id="email" placeholder="name@example.com">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com">
                     <label for="email">Email address</label>
                 </div>
 
                 <div class="form-floating mb-4">
-                    <input type="password" class="form-control" id="password" placeholder="Password">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
                     <label for="password">Password</label>
                 </div>
 

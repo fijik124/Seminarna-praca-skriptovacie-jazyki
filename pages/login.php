@@ -3,11 +3,11 @@
         
         <div class="card-body">
             <div class="text-center mb-4">
-                <h2 class="fw-bold text-dark">Welcome Back</h2>
-                <p class="text-muted small">Access student notes from all around the globe.</p>
+                <h2 class="fw-bold text-light">Welcome Back</h2>
+                <p class="text-muted small">Znovu sa vydíme.</p>
             </div>
 
-            <form>
+            <form action="../scripts/login_process.php" method="POST">
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="username" placeholder="Username">
                     <label for="username">Username</label>

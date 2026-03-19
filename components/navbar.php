@@ -5,7 +5,7 @@
       <div class="bg-primary bg-gradient rounded-3 p-2 me-2 d-flex align-items-center justify-content-center shadow-primary" style="width: 35px; height: 35px;">
         <i class="fas fa-rocket text-white fs-6"></i>
       </div>
-      <span class="fw-black tracking-tight text-white">ALL<span class="text-primary">NOTES</span></span>
+      <span class="fw-black tracking-tight text-white">Rev<span class="text-primary">Track</span></span>
     </a>
     
     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">

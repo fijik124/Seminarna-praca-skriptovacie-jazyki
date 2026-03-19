@@ -66,7 +66,28 @@
                 </div>
             </div>
 
-            <div class="flex-shrink-0" style="width: 120px;"></div>
+            <div class="flex-shrink-0 text-end" style="min-width: 150px;">
+    <?php if (session_status() === PHP_SESSION_ACTIVE): ?>
+        <button type="button" 
+                class="btn btn-sm btn-outline-secondary border-0 d-flex align-items-center gap-2 ms-auto"
+                data-bs-toggle="popover" 
+                data-bs-title="Session Info" 
+                data-bs-html="true"
+                data-bs-content="<div class='small text-start'>
+                    <strong>ID:</strong> <code class='text-info'><?= session_id() ?></code><br>
+                    <strong>Status:</strong> <span class='badge bg-success'>Active</span><br>
+                    <strong>Items:</strong> <?= count($_SESSION) ?> vars
+                </div>">
+            <i class="fas fa-user-tag text-secondary"></i>
+            <span class="text-secondary small" style="font-family: monospace;">
+                ID: <?= substr(session_id(), 0, 8) ?>...
+            </span>
+        </button>
+    <?php else: ?>
+        <span class="text-muted small italic">Session inactive</span>
+    <?php endif; ?>
+</div>
+
 
         </div>
     </div>
@@ -84,3 +105,24 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    window.openDevModal = function(id) {
+        const template = document.getElementById('data-' + id);
+        if (!template) return;
+        
+        const content = template.innerHTML;
+        document.getElementById('modal-content-area').innerHTML = content;
+        
+        const myModal = new bootstrap.Modal(document.getElementById('dev-modal'));
+        myModal.show();
+    };
+    
+    // Initialize Popovers if you use them for Session Info
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl)
+    });
+});
+</script>
