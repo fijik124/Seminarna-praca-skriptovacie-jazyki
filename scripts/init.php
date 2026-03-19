@@ -16,7 +16,7 @@ $db_info = [
 try {
     $dsn = "mysql:host=$db_host;dbname=$db_name;charset=utf8mb4";
     $pdo = new PDO($dsn, $db_user, $db_pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        PDO::ATTR_ERRMODE
     ]);
 
     // Log success to the panel
