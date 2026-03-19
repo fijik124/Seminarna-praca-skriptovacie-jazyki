@@ -6,7 +6,7 @@
 require_once __DIR__ . '/init.php';
 
 $db_host = '127.0.0.1';
-$db_name = 'skola';
+$db_name = 'revtrack';
 $db_user = 'server';
 $db_pass = 'server124Pas';
 $db_connected = false;
