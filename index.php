@@ -1,6 +1,10 @@
  <?php
-    session_start();
-    require './scripts/error_handler.php';
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    require_once __DIR__ . '/scripts/error_handler.php';
+    require_once __DIR__ . '/scripts/db.php';
     // Use ltrim to remove the leading slash so "/about" becomes "about"
     $requestedPath = ltrim($_SERVER['REQUEST_URI'], '/');
     
@@ -20,10 +24,8 @@
     // Check if the file exists in our routes, otherwise 404
     $currentPageFile = $routes[$page]['route'] ?? __DIR__ . '/pages/404.php';
 
-    include './scripts/init.php'; // Contains the log_to_dev_panel function
-  
-  // Your app logic
-  log_to_dev_panel("Page loaded", "success");
+        // Your app logic
+        log_to_dev_panel("Page loaded", "success");
     ?>
 
 <!DOCTYPE html>

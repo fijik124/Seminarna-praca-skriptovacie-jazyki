@@ -1,11 +1,16 @@
-<?php 
-require './init.php';          // Error handler and debug array setup
-require './error_handler.php';            // The PDO $pdo connection
+<?php
+require_once __DIR__ . '/error_handler.php';
+require_once __DIR__ . '/db.php';
 
 $errors = [];
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ../signup');
+    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -49,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_to_dev_panel("User Registered", "success", "User $email added to revtrack database.");
             
             // Redirect after success
-            header('Location: index.php');
+            header('Location: ../');
             exit;
 
         } catch (PDOException $e) {
@@ -57,19 +62,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors['email_error'] = "This email already exists!";
                 log_to_dev_panel("Database Conflict", "warning", "Duplicate email entry attempted: $email");
             } else {
-                // This will also be caught by your global exception handler
-                $errors['other_error'] = "A database error occurred.";
                 log_to_dev_panel("SQL Error", "error", $e->getMessage());
+                render_server_error_page('Database error during registration.', $e->getMessage());
             }    
         }
     }
 }
 
 // Optional: if you still want to see errors printed at the top
-if(!empty($errors)) {
+if (!empty($errors)) {
     log_to_dev_panel("Form contains " . count($errors) . " errors.", "error", implode(", ", $errors));
+    $_SESSION['form_errors'] = $errors;
+    $_SESSION['old_input'] = [
+        'first_name' => $first_name ?? '',
+        'last_name' => $last_name ?? '',
+        'email' => $email ?? '',
+    ];
+
+    header('Location: ../signup');
+    exit;
 }
-?>
- <?php if ($devMode) {
-      require __DIR__ . '/components/devpanel.php';
-    };?>
