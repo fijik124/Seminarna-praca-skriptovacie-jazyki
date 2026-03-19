@@ -68,16 +68,32 @@
 
             <div class="flex-shrink-0 text-end" style="min-width: 150px;">
     <?php if (session_status() === PHP_SESSION_ACTIVE): ?>
+        <?php
+            $sessionPayload = empty($_SESSION)
+                ? 'Session is active but contains no keys.'
+                : json_encode($_SESSION, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+            if ($sessionPayload === false) {
+                $sessionPayload = 'Unable to encode session data.';
+            }
+
+            $sessionPopoverContent = "<div class='small text-start'>"
+                . "<strong>ID:</strong> <code class='text-info'>" . htmlspecialchars(session_id(), ENT_QUOTES, 'UTF-8') . "</code><br>"
+                . "<strong>Status:</strong> <span class='badge bg-success'>Active</span><br>"
+                . "<strong>Items:</strong> " . count($_SESSION) . " vars"
+                . "<hr class='my-2'>"
+                . "<strong class='d-block mb-1'>Session Data</strong>"
+                . "<pre class='mb-0 p-2 bg-dark text-info border border-secondary rounded' style='max-height:220px; overflow:auto; white-space:pre-wrap;'>"
+                . htmlspecialchars($sessionPayload, ENT_QUOTES, 'UTF-8')
+                . "</pre>"
+                . "</div>";
+        ?>
         <button type="button" 
                 class="btn btn-sm btn-outline-secondary border-0 d-flex align-items-center gap-2 ms-auto"
                 data-bs-toggle="popover" 
                 data-bs-title="Session Info" 
                 data-bs-html="true"
-                data-bs-content="<div class='small text-start'>
-                    <strong>ID:</strong> <code class='text-info'><?= session_id() ?></code><br>
-                    <strong>Status:</strong> <span class='badge bg-success'>Active</span><br>
-                    <strong>Items:</strong> <?= count($_SESSION) ?> vars
-                </div>">
+                data-bs-content="<?= htmlspecialchars($sessionPopoverContent, ENT_QUOTES, 'UTF-8') ?>">
             <i class="fas fa-user-tag text-secondary"></i>
             <span class="text-secondary small" style="font-family: monospace;">
                 ID: <?= substr(session_id(), 0, 8) ?>...
