@@ -31,6 +31,30 @@ function log_to_dev_panel($message, $type = 'info', $details = '') {
     ];
 }
 
+/**
+ * Render a friendly 500 page and terminate execution.
+ */
+function render_server_error_page($message = 'Unexpected server error.', $details = '') {
+    http_response_code(500);
+
+    // Prevent broken partial HTML from being displayed together with the error page.
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    $errorMessage = $message;
+    $errorDetails = DEV_MODE ? $details : '';
+    $errorPage = dirname(__DIR__) . '/pages/500.php';
+
+    if (file_exists($errorPage)) {
+        require $errorPage;
+    } else {
+        echo '<h1>500 - Server Error</h1><p>Something went wrong.</p>';
+    }
+
+    exit;
+}
+
 if (DEV_MODE) {
     // 1. Catch Warnings/Notices
     set_error_handler(function ($errno, $errstr, $errfile, $errline) {
@@ -39,20 +63,28 @@ if (DEV_MODE) {
         return false;
     });
 
-    // 2. Catch Fatal Exceptions (like PDO failing)
+    // 2. Catch uncaught exceptions.
     set_exception_handler(function ($e) {
-        log_to_dev_panel("Fatal: " . $e->getMessage(), "error", $e->getTraceAsString());
-        // Force the panel to show before dying
-        include_once __DIR__ . '../components/devpanel.php'; 
-        exit;
+        $details = $e->getMessage() . "\n\n" . $e->getTraceAsString();
+        log_to_dev_panel("Uncaught exception: " . $e->getMessage(), "error", $details);
+        render_server_error_page('Application crashed with an unhandled exception.', $details);
     });
 
-    // 3. Automatically include the panel at the end of every successful page load
+    // 3. Catch fatal runtime errors.
     register_shutdown_function(function() {
-        // We check if the file exists to prevent a secondary error
-        $panelPath = __DIR__ . '../components/devpanel.php';
-        if (file_exists($panelPath)) {
-            include_once $panelPath;
+        $error = error_get_last();
+        $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
+
+        if ($error && in_array($error['type'], $fatalTypes, true)) {
+            $details = sprintf(
+                'File: %s | Line: %d | Message: %s',
+                $error['file'],
+                $error['line'],
+                $error['message']
+            );
+
+            log_to_dev_panel('Fatal shutdown error occurred.', 'error', $details);
+            render_server_error_page('Server encountered a fatal error.', $details);
         }
     });
 }
