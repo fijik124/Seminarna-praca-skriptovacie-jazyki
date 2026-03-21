@@ -3,7 +3,7 @@
         
         <div class="card-body">
             <div class="text-center mb-4">
-                <h2 class="fw-bold text-dark">Create Account</h2>
+                <h2 class="fw-bold text-light">Create Account</h2>
                 <p class="text-muted small">Join our global community of students today.</p>
             </div>
 
