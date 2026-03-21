@@ -9,12 +9,12 @@
 
             <form action="../scripts/login_process.php" method="POST">
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="username" placeholder="Username">
-                    <label for="username">Username</label>
+                    <input type="email" class="form-control" id="username" name="email" placeholder="Email">
+                    <label for="username">Email</label>
                 </div>
 
                 <div class="form-floating mb-4">
-                    <input type="password" class="form-control" id="password" placeholder="Password">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
                     <label for="password">Password</label>
                 </div>
 
@@ -26,7 +26,7 @@
 
                 <div class="text-center">
                     <p class="small text-muted mb-0">Don't have an account? 
-                        <a href="#" class="text-decoration-none fw-semibold">Sign up</a>
+                        <a href="/signup" class="text-decoration-none fw-semibold">Sign up</a>
                     </p>
                 </div>
             </form>

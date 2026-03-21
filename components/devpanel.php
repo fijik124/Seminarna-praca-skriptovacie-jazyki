@@ -88,6 +88,11 @@
                 . "</pre>"
                 . "</div>";
         ?>
+        <form action="/scripts/reset_session.php" method="post" class="d-inline-block me-2">
+            <button type="submit" class="btn btn-sm btn-outline-warning">
+                <i class="fas fa-rotate-left me-1"></i>Reset Session
+            </button>
+        </form>
         <button type="button" 
                 class="btn btn-sm btn-outline-secondary border-0 d-flex align-items-center gap-2 ms-auto"
                 data-bs-toggle="popover" 
