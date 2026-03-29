@@ -20,6 +20,9 @@
         <li class="nav-item">
           <a class="nav-link px-3 fw-medium position-relative nav-hover-effect" href="/about">About</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 fw-medium position-relative nav-hover-effect" href="/tracks">Trate</a>
+        </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle px-3 fw-medium" href="#" data-bs-toggle="dropdown">Services</a>
           <ul class="dropdown-menu dropdown-menu-dark shadow-lg border-secondary mt-3 animate slideIn">

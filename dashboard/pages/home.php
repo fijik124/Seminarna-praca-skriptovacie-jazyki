@@ -1,6 +1,19 @@
 <?php
+require_once __DIR__ . '/../../scripts/db.php';
 $user = $_SESSION['user'] ?? [];
 $firstName = trim((string) ($user['first_name'] ?? 'User'));
+
+
+$stmt = $pdo->prepare('SELECT id, name, created_at, updated_at FROM tracks ORDER BY created_at DESC');
+$stmt->execute();
+$tracksData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$registredThisMonth = array_map(static function (array $track) use ($pdo) {
+    $createdAt = strtotime($track['created_at']);
+    $currentMonth = date('Y-m');
+    return date('Y-m', $createdAt) === $currentMonth;
+}, $tracksData);
+$registredThisMonthCount = count(array_filter($registredThisMonth));
 ?>
 
 <main data-bs-theme="dark" class="bg-dark text-light min-vh-100 pb-5">
@@ -29,9 +42,9 @@ $firstName = trim((string) ($user['first_name'] ?? 'User'));
                 <div class="col-6 col-xl-3">
                     <div class="card bg-body-tertiary border-secondary border-opacity-25 h-100">
                         <div class="card-body">
-                            <p class="text-secondary small mb-2">Total Requests</p>
-                            <h3 class="fw-bold mb-1">14,892</h3>
-                            <small class="text-success"><i class="fas fa-arrow-up me-1"></i>+8.3% this week</small>
+                            <p class="text-secondary small mb-2">Total Registered Tracks</p>
+                            <h3 class="fw-bold mb-1"><?php echo count($tracksData);?></h3>
+                            <small class="text-success"><i class="fas fa-arrow-up me-1"></i>This month: <?php echo $registredThisMonthCount; ?></small>
                         </div>
                     </div>
                 </div>
@@ -141,26 +154,6 @@ $firstName = trim((string) ($user['first_name'] ?? 'User'));
                                 <div class="progress" role="progressbar" aria-label="Storage usage" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100">
                                     <div class="progress-bar bg-warning" style="width: 78%"></div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card bg-body-tertiary border-secondary border-opacity-25">
-                        <div class="card-header border-secondary border-opacity-25">
-                            <h5 class="mb-0">Your Tasks</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" checked>
-                                <label class="form-check-label">Review login analytics</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox">
-                                <label class="form-check-label">Prepare weekly report</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox">
-                                <label class="form-check-label">Audit inactive accounts</label>
                             </div>
                         </div>
                     </div>

@@ -39,10 +39,7 @@ if ($initials === '') {
           <a class="nav-link px-3 fw-medium position-relative nav-hover-effect<?= $navActive('home') ?>" href="/dashboard/home"<?= $currentPage === 'home' ? ' aria-current="page"' : '' ?>>Overview</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link px-3 fw-medium position-relative nav-hover-effect<?= $navActive('about') ?>" href="/dashboard/about"<?= $currentPage === 'about' ? ' aria-current="page"' : '' ?>>About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link px-3 fw-medium position-relative nav-hover-effect<?= $navActive('contact') ?>" href="/dashboard/contact"<?= $currentPage === 'contact' ? ' aria-current="page"' : '' ?>>Contact</a>
+          <a class="nav-link px-3 fw-medium position-relative nav-hover-effect<?= $navActive('tracks') ?>" href="/dashboard/tracks"<?= $currentPage === 'tracks' ? ' aria-current="page"' : '' ?>>Tracks</a>
         </li>
       </ul>
 

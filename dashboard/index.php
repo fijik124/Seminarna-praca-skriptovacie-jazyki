@@ -7,16 +7,27 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 require_once __DIR__ . '/../scripts/error_handler.php';
 require_once __DIR__ . '/../scripts/db.php';
 
-// 1. Parse the URL
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+// 1. Parse URL and normalize to app-relative path
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/dashboard', PHP_URL_PATH) ?: '/dashboard';
+$scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/dashboard/index.php')), '/');
+
+if ($scriptDir !== '' && $scriptDir !== '.' && strpos($requestPath, $scriptDir) === 0) {
+    $requestPath = substr($requestPath, strlen($scriptDir));
+}
+
+$requestPath = '/' . ltrim($requestPath, '/');
+$requestPath = preg_replace('#^/(?:index\.php/?)?#', '/', $requestPath);
 
 // 2. Extract the page name relative to /dashboard/
-$requestedPath = str_replace('/dashboard/', '', $requestUri);
-$page = trim($requestedPath, '/') ?: 'home';
+$requestedPath = preg_replace('#^/dashboard(?:/index\.php)?/?#', '/', (string) $requestPath);
+$page = trim((string) $requestedPath, '/') ?: 'home';
 
 // 3. Define valid routes
 $routes = [
     'home'    => ['route' => __DIR__ . '/pages/home.php',    'title' => 'RevTrack Admin - Home'],
+    'tracks' => ['route' => __DIR__ . '/pages/tracks.php', 'title' => 'RevTrack Admin - Tracks'],
+    'tracks-create' => ['route' => __DIR__ . '/pages/tracks_create.php', 'title' => 'RevTrack Admin - Create Track'],
+    'tracks-edit' => ['route' => __DIR__ . '/pages/tracks_edit.php', 'title' => 'RevTrack Admin - Edit Track'],
 ];
 
 // 4. Determine which page to load

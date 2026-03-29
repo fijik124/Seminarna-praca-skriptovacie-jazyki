@@ -5,15 +5,23 @@
 
     require_once __DIR__ . '/scripts/error_handler.php';
     require_once __DIR__ . '/scripts/db.php';
-    // Use ltrim to remove the leading slash so "/about" becomes "about"
-    $requestedPath = ltrim($_SERVER['REQUEST_URI'], '/');
-    
+    $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    $scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
+
+    if ($scriptDir !== '' && $scriptDir !== '.' && strpos($requestPath, $scriptDir) === 0) {
+        $requestPath = substr($requestPath, strlen($scriptDir));
+    }
+
+    $requestPath = '/' . ltrim($requestPath, '/');
+    $requestPath = preg_replace('#^/(?:index\.php/?)?#', '/', $requestPath);
+
     // Fallback to 'home' if the path is empty
-    $page = $requestedPath ?: 'home';
+    $page = trim((string) $requestPath, '/') ?: 'home';
 
     $routes = [
       'home' => [ 'route'=> __DIR__ . '/pages/home.php', 'title' => 'RevTrack - Home'],
       'about' => [ 'route'=> __DIR__ . '/pages/about.php', 'title' => 'RevTrack - About'],
+      'tracks' => [ 'route'=> __DIR__ . '/pages/tracks.php', 'title' => 'RevTrack - Tracks'],
       'contact' => [ 'route'=> __DIR__ . '/pages/contact.php', 'title' => 'RevTrack - Contact'],
       'login' => [ 'route'=> __DIR__ . '/pages/login.php', 'title' => 'RevTrack - Login'],
       'signup' => [ 'route'=> __DIR__ . '/pages/signup.php', 'title' => 'RevTrack - Signup'],
