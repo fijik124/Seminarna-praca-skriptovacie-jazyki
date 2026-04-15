@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS skola;
 USE skola;
 
-CREATE TABLE 'groups' (
+CREATE TABLE `groups` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -16,7 +16,7 @@ CREATE TABLE group_permissions (
     group_id INT NOT NULL,
     permission_id INT NOT NULL,
     PRIMARY KEY (group_id, permission_id),
-    FOREIGN KEY (group_id) REFERENCES 'groups' (id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES `groups` (id) ON DELETE CASCADE,
     FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -28,11 +28,11 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL, -- Length allows for secure PHP password_hash()
     group_id INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (group_id) REFERENCES 'groups' (id) ON DELETE SET NULL
+    FOREIGN KEY (group_id) REFERENCES `groups` (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Seed initial data
-INSERT INTO 'groups' (name) VALUES ('Admin'), ('User');
+INSERT INTO `groups` (name) VALUES ('Admin'), ('User');
 
 INSERT INTO permissions (name, slug) VALUES 
 ('Create Track', 'track_create'),
