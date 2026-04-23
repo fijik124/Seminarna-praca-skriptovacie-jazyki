@@ -16,7 +16,14 @@ try {
     $stmt->execute();
     $tracksData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
-    if (function_exists('log_to_file')) {
+    if (function_exists('app_log')) {
+        app_log('error', 'Dashboard home tracks query failed', [
+            'exception_class' => get_class($e),
+            'exception' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+    } elseif (function_exists('log_to_file')) {
         log_to_file('Dashboard home tracks query failed: ' . $e->getMessage(), 'ERROR');
     }
 }

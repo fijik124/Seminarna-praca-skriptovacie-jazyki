@@ -16,6 +16,8 @@ $auth = new \Repository\AuthRepository();
 // Flags for rendering state
 $isLoggedIn = $auth->isLoggedIn();
 $hasDashboardView = $isLoggedIn && $auth->hasPermission('dashboard_view');
+$isAdmin = $isLoggedIn && $auth->isAdmin();
+$isOrganizer = $isLoggedIn && $auth->isOrganizer();
 
 // 1. Parse URL and normalize to app-relative path
 $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/dashboard', PHP_URL_PATH) ?: '/dashboard';
@@ -38,6 +40,8 @@ $page = trim((string) $requestedPath, '/') ?: 'home';
 $routes = [
     'home'    => ['template' => __DIR__ . '/../../templates/dashboard/pages/home.php',    'title' => 'RevTrack Admin - Home'],
     'tracks' => ['template' => __DIR__ . '/../../templates/dashboard/pages/tracks.php', 'title' => 'RevTrack Admin - Tracks'],
+    'events' => ['template' => __DIR__ . '/../../templates/dashboard/pages/events.php', 'title' => 'RevTrack Admin - Events'],
+    'events-view' => ['template' => __DIR__ . '/../../templates/dashboard/pages/events_view.php', 'title' => 'RevTrack Admin - Event Management'],
     'tracks-create' => [
         'template' => __DIR__ . '/../../templates/dashboard/pages/tracks_create.php', 
         'title' => 'RevTrack Admin - Create Track',
@@ -105,15 +109,32 @@ if (function_exists('log_to_dev_panel')) {
                         <h2 class='mb-4'>Neni ste prihláseni</h2>
                         <a href='" . htmlspecialchars(url('login')) . "' class='btn btn-primary btn-lg'>Prihlásiť sa</a>
                     </div>";
-                } elseif (!$hasDashboardView || !$hasPagePermission) {
+                } elseif (!$hasDashboardView || (!$hasPagePermission)) {
                     echo "
                     <div class='alert alert-warning text-center mt-5 py-5 shadow-sm'>
                         <h3 class='mb-0'>Nemaťe opravnenie na to aby ste vydeli tento obsah</h3>
                     </div>";
-                } elseif (file_exists($currentPageFile)) {
-                    require $currentPageFile; 
                 } else {
-                    echo "<div class='alert alert-danger'>Error: File not found at " . htmlspecialchars($currentPageFile) . "</div>";
+                    try {
+                        if (!file_exists($currentPageFile)) {
+                            throw new RuntimeException('Dashboard template not found: ' . $currentPageFile);
+                        }
+
+                        require $currentPageFile;
+                    } catch (Throwable $e) {
+                        if (function_exists('app_log')) {
+                            app_log('error', 'Dashboard page rendering failed', [
+                                'page' => $page,
+                                'template' => $currentPageFile,
+                                'exception_class' => get_class($e),
+                                'exception' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine(),
+                            ]);
+                        }
+
+                        render_server_error_page('Nepodarilo sa vykresliť dashboard stránku.');
+                    }
                 }
                 ?>
             </div>

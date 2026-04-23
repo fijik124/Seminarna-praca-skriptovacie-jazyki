@@ -3,6 +3,10 @@
         session_start();
     }
 
+    if (!ob_get_level()) {
+        ob_start();
+    }
+
     require_once __DIR__ . '/../config/init.php';
     require_once __DIR__ . '/../src/error_handler.php';
     require_once __DIR__ . '/../config/db.php';
@@ -24,6 +28,8 @@
       'home' => [ 'template'=> __DIR__ . '/../templates/pages/home.php', 'title' => 'RevTrack - Home'],
       'about' => [ 'template'=> __DIR__ . '/../templates/pages/about.php', 'title' => 'RevTrack - About'],
       'tracks' => [ 'template'=> __DIR__ . '/../templates/pages/tracks.php', 'title' => 'RevTrack - Tracks'],
+      'events' => [ 'template'=> __DIR__ . '/../templates/pages/events.php', 'title' => 'RevTrack - Events'],
+      'event' => [ 'template'=> __DIR__ . '/../templates/pages/event.php', 'title' => 'RevTrack - Event Detail'],
       'contact' => [ 'template'=> __DIR__ . '/../templates/pages/contact.php', 'title' => 'RevTrack - Contact'],
       'login' => [ 'template'=> __DIR__ . '/../templates/pages/login.php', 'title' => 'RevTrack - Login'],
       'signup' => [ 'template'=> __DIR__ . '/../templates/pages/signup.php', 'title' => 'RevTrack - Signup'],
@@ -94,7 +100,28 @@
 
     <div class="container flex-grow-1">
         <div class="content-fade-in mt-5">
-            <?php require $currentPageFile;?>
+            <?php
+            try {
+                if (!file_exists($currentPageFile)) {
+                    throw new RuntimeException('Page template not found: ' . $currentPageFile);
+                }
+
+                require $currentPageFile;
+            } catch (Throwable $e) {
+                if (function_exists('app_log')) {
+                    app_log('error', 'Public page rendering failed', [
+                        'page' => $page,
+                        'template' => $currentPageFile,
+                        'exception_class' => get_class($e),
+                        'exception' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                    ]);
+                }
+
+                render_server_error_page('Nepodarilo sa vykresliť stránku.');
+            }
+            ?>
         </div>
     </div>
 

@@ -6,7 +6,7 @@ $dashboardPath = preg_replace('#^/dashboard/?#', '', $requestPath);
 $currentPage = trim($dashboardPath, '/') ?: 'home';
 
 $navActive = static function (string $page) use ($currentPage): string {
-    return $currentPage === $page ? ' active text-primary' : '';
+    return ($currentPage === $page || str_starts_with($currentPage, $page . '-')) ? ' active text-primary' : '';
 };
 
 $user = $_SESSION['user'] ?? [];
@@ -44,6 +44,9 @@ if ($initials === '') {
         <li class="nav-item">
           <a class="nav-link px-3 fw-medium position-relative nav-hover-effect<?= $navActive('tracks') ?>" href="<?= url('dashboard/tracks') ?>"<?= $currentPage === 'tracks' ? ' aria-current="page"' : '' ?>>Tracks</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 fw-medium position-relative nav-hover-effect<?= $navActive('events') ?>" href="<?= url('dashboard/events') ?>"<?= (str_starts_with($currentPage, 'events')) ? ' aria-current="page"' : '' ?>>Events</a>
+        </li>
       </ul>
 
       <div class="d-flex align-items-center gap-3">
@@ -69,7 +72,7 @@ if ($initials === '') {
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow-lg border-secondary mt-3">
               <li><h6 class="dropdown-header text-white"><?= htmlspecialchars($displayName) ?></h6></li>
               <?php if (!empty($user['group_id'])): ?>
-                <li><span class="dropdown-item-text text-info small">Group: <?= (int)$user['group_id'] === 1 ? 'Admin' : 'User' ?></span></li>
+                <li><span class="dropdown-item-text text-info small">Group: <?= htmlspecialchars((string) ($user['group_name'] ?? 'User')) ?></span></li>
               <?php endif; ?>
               <?php if ($email !== ''): ?>
                 <li><span class="dropdown-item-text text-secondary small"><?= htmlspecialchars($email) ?></span></li>

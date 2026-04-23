@@ -3,6 +3,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
+if (!ob_get_level()) {
+    ob_start();
+}
+
 require_once __DIR__ . '/../../config/init.php';
 require_once __DIR__ . '/../../src/error_handler.php';
 require_once __DIR__ . '/../../config/db.php';
@@ -92,10 +96,27 @@ if (function_exists('log_to_dev_panel')) {
                         <h2 class='mb-4'>Neni ste prihláseni</h2>
                         <a href='" . htmlspecialchars(url('login')) . "' class='btn btn-primary btn-lg'>Prihlásiť sa</a>
                     </div>";
-                } elseif (file_exists($currentPageFile)) {
-                    require $currentPageFile; 
                 } else {
-                    echo "<div class='alert alert-danger'>Error: File not found at " . htmlspecialchars($currentPageFile) . "</div>";
+                    try {
+                        if (!file_exists($currentPageFile)) {
+                            throw new RuntimeException('User template not found: ' . $currentPageFile);
+                        }
+
+                        require $currentPageFile;
+                    } catch (Throwable $e) {
+                        if (function_exists('app_log')) {
+                            app_log('error', 'User page rendering failed', [
+                                'page' => $page,
+                                'template' => $currentPageFile,
+                                'exception_class' => get_class($e),
+                                'exception' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine(),
+                            ]);
+                        }
+
+                        render_server_error_page('Nepodarilo sa vykresliť používateľskú stránku.');
+                    }
                 }
                 ?>
             </div>

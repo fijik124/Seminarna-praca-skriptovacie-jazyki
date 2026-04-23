@@ -2,11 +2,17 @@
 
     <section class="py-5">
         <div class="container">
-            <h1 class="display-4 fw-bold">Section</h1>
-            <p class="lead text-secondary">
-                A simple container to divide your page into <span class="text-primary fw-semibold">sections</span>, 
-                like the one you're currently reading.
+            <p class="text-uppercase small text-secondary mb-2">RevTrack Platform</p>
+            <h1 class="display-4 fw-bold mb-3">Motocross track and race management in one place.</h1>
+            <p class="lead text-secondary mb-4">
+                This page is for riders, organizers, and admins who need a clear overview of tracks, race events,
+                and user activity. Use RevTrack to browse tracks, manage registrations, and coordinate race operations.
             </p>
+            <div class="d-flex flex-wrap gap-3">
+                <a href="<?= url('tracks') ?>" class="btn btn-primary btn-lg px-4">Browse Tracks</a>
+                <a href="<?= url('signup') ?>" class="btn btn-outline-light btn-lg px-4">Create Account</a>
+                <a href="<?= url('login') ?>" class="btn btn-outline-info btn-lg px-4">Admin / Organizer Login</a>
+            </div>
         </div>
     </section>
 
@@ -14,20 +20,20 @@
         <div class="container">
             <div class="row text-center g-4">
                 <div class="col-6 col-md-3">
-                    <small class="text-uppercase tracking-wider text-secondary fw-bold">Database Queries</small>
-                    <div class="h2 fw-bold text-primary mt-1">3,456</div>
+                    <small class="text-uppercase text-secondary fw-bold">Public Track List</small>
+                    <div class="h4 fw-bold text-primary mt-1">Discover open tracks</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <small class="text-uppercase tracking-wider text-secondary fw-bold">Active Users</small>
-                    <div class="h2 fw-bold text-primary mt-1">123</div>
+                    <small class="text-uppercase text-secondary fw-bold">Race Coordination</small>
+                    <div class="h4 fw-bold text-primary mt-1">Plan events faster</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <small class="text-uppercase tracking-wider text-secondary fw-bold">Server Uptime</small>
-                    <div class="h2 fw-bold text-primary mt-1">99.9%</div>
+                    <small class="text-uppercase text-secondary fw-bold">Commissioners</small>
+                    <div class="h4 fw-bold text-primary mt-1">Attendance overview</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <small class="text-uppercase tracking-wider text-secondary fw-bold">Page Load</small>
-                    <div class="h2 fw-bold text-primary mt-1">0.4s</div>
+                    <small class="text-uppercase text-secondary fw-bold">User Management</small>
+                    <div class="h4 fw-bold text-primary mt-1">Admin and organizer roles</div>
                 </div>
             </div>
         </div>
@@ -35,16 +41,16 @@
 
     <section class="py-5">
         <div class="container">
-            <h2 class="text-center mb-5 fw-bold">Core Features</h2>
+            <h2 class="text-center mb-5 fw-bold">What this page is for</h2>
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="card h-100 border-0 shadow-sm bg-body-tertiary">
                         <div class="card-body text-center p-4">
                             <div class="mb-3 text-warning">
-                                <i class="fas fa-bolt fa-3x"></i>
+                                <i class="fas fa-map-location-dot fa-3x"></i>
                             </div>
-                            <h4 class="card-title fw-bold">Lightning Fast</h4>
-                            <p class="card-text text-secondary">Optimized PHP backend for millisecond responses.</p>
+                            <h4 class="card-title fw-bold">For Riders</h4>
+                            <p class="card-text text-secondary">Check available tracks, see details, and quickly decide where to ride.</p>
                         </div>
                     </div>
                 </div>
@@ -52,10 +58,10 @@
                     <div class="card h-100 border-0 shadow-sm bg-body-tertiary">
                         <div class="card-body text-center p-4">
                             <div class="mb-3 text-info">
-                                <i class="fas fa-code fa-3x"></i>
+                                <i class="fas fa-flag-checkered fa-3x"></i>
                             </div>
-                            <h4 class="card-title fw-bold">Clean Code</h4>
-                            <p class="card-text text-secondary">Strict PSR compliance and modular architecture.</p>
+                            <h4 class="card-title fw-bold">For Organizers</h4>
+                            <p class="card-text text-secondary">Create and manage race events, assign staff, and keep event data organized.</p>
                         </div>
                     </div>
                 </div>
@@ -63,10 +69,10 @@
                     <div class="card h-100 border-0 shadow-sm bg-body-tertiary">
                         <div class="card-body text-center p-4">
                             <div class="mb-3 text-success">
-                                <i class="fas fa-lock fa-3x"></i>
+                                <i class="fas fa-users-gear fa-3x"></i>
                             </div>
-                            <h4 class="card-title fw-bold">Fully Secure</h4>
-                            <p class="card-text text-secondary">Automatic CSRF protection and SQL injection prevention.</p>
+                            <h4 class="card-title fw-bold">For Admins</h4>
+                            <p class="card-text text-secondary">Control permissions, maintain track records, and monitor platform activity.</p>
                         </div>
                     </div>
                 </div>
@@ -77,11 +83,12 @@
     <section class="py-5 mb-5">
         <div class="container">
             <div class="p-5 text-center bg-primary bg-gradient rounded-4 shadow">
-                <h3 class="display-6 fw-bold text-white">Ready to start building?</h3>
-                <p class="lead text-white opacity-75">Join over 1,000 developers using our framework today.</p>
-                <div class="d-flex justify-content-center gap-3 mt-4">
-                    <a href="<?= url('signup') ?>" class="btn btn-light btn-lg px-4 fw-bold">Create Account</a>
-                    <a href="<?= url('about') ?>" class="btn btn-outline-light btn-lg px-4">Learn More</a>
+                <h3 class="display-6 fw-bold text-white">Start using RevTrack today</h3>
+                <p class="lead text-white opacity-75">Explore tracks as a visitor, or sign in to manage races and operations.</p>
+                <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                    <a href="<?= url('tracks') ?>" class="btn btn-light btn-lg px-4 fw-bold">View Tracks</a>
+                    <a href="<?= url('signup') ?>" class="btn btn-outline-light btn-lg px-4">Create Account</a>
+                    <a href="<?= url('contact') ?>" class="btn btn-outline-light btn-lg px-4">Contact Us</a>
                 </div>
             </div>
         </div>

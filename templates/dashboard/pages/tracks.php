@@ -14,6 +14,17 @@ $error = '';
 try {
     $tracks = $trackRepo->getAll();
 } catch (Throwable $e) {
+    if (function_exists('app_log')) {
+        app_log('error', 'Dashboard tracks load failed', [
+            'exception_class' => get_class($e),
+            'exception' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+    } elseif (function_exists('log_to_file')) {
+        log_to_file('Dashboard tracks load failed: ' . $e->getMessage(), 'ERROR');
+    }
+
     $error = $e->getMessage();
 }
 

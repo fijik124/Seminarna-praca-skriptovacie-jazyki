@@ -43,8 +43,16 @@ class AuthRepository {
                 'last_name' => $user->lastName,
                 'email' => $user->email,
                 'group_id' => $user->groupId,
+                'group_name' => null,
                 'permissions' => $permissions
             ];
+
+            if ($user->groupId) {
+                $group = $this->groupRepo->find($user->groupId);
+                if ($group) {
+                    $_SESSION['user']['group_name'] = $group->name;
+                }
+            }
             return true;
         }
         return false;
@@ -57,8 +65,13 @@ class AuthRepository {
         $this->ensureSession();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            if (function_exists('log_to_file')) {
-                log_to_file("Neoprávnený prístup k login: " . $_SERVER['REQUEST_METHOD'], 'WARNING');
+            if (function_exists('app_log')) {
+                app_log('warning', 'Unauthorized login request method', [
+                    'method' => $_SERVER['REQUEST_METHOD'] ?? null,
+                    'action' => 'login',
+                ]);
+            } elseif (function_exists('log_to_file')) {
+                log_to_file("Neoprávnený prístup k login: " . ($_SERVER['REQUEST_METHOD'] ?? 'unknown'), 'WARNING');
             }
             header('Location: ' . url('login'));
             exit;
@@ -88,8 +101,13 @@ class AuthRepository {
         $this->ensureSession();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            if (function_exists('log_to_file')) {
-                log_to_file("Neoprávnený prístup k register: " . $_SERVER['REQUEST_METHOD'], 'WARNING');
+            if (function_exists('app_log')) {
+                app_log('warning', 'Unauthorized register request method', [
+                    'method' => $_SERVER['REQUEST_METHOD'] ?? null,
+                    'action' => 'register',
+                ]);
+            } elseif (function_exists('log_to_file')) {
+                log_to_file("Neoprávnený prístup k register: " . ($_SERVER['REQUEST_METHOD'] ?? 'unknown'), 'WARNING');
             }
             header('Location: ' . url('signup'));
             exit;
@@ -141,7 +159,15 @@ class AuthRepository {
                     exit;
                 }
             } catch (\Throwable $e) {
-                if (function_exists('log_to_file')) {
+                if (function_exists('app_log')) {
+                    app_log('error', 'Registration error', [
+                        'exception_class' => get_class($e),
+                        'exception' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'email' => $email,
+                    ]);
+                } elseif (function_exists('log_to_file')) {
                     log_to_file("Registration error: " . $e->getMessage(), 'ERROR');
                 }
                 if (function_exists('render_server_error_page')) {
@@ -254,12 +280,52 @@ class AuthRepository {
     }
 
     /**
+     * Check if current user belongs to a specific group.
+     */
+    public function hasGroup(string $groupName): bool {
+        $user = $this->getCurrentUser();
+        if (!$user) {
+            return false;
+        }
+
+        if (($user['group_name'] ?? '') !== '') {
+            return strcasecmp((string) $user['group_name'], $groupName) === 0;
+        }
+
+        if (!isset($user['group_id'])) {
+            return false;
+        }
+
+        $group = $this->groupRepo->find((int) $user['group_id']);
+        return $group ? strcasecmp($group->name, $groupName) === 0 : false;
+    }
+
+    public function isAdmin(): bool {
+        return $this->hasGroup('Admin');
+    }
+
+    public function isOrganizer(): bool {
+        return $this->hasGroup('Organizator');
+    }
+
+    public function isTrackMarshal(): bool {
+        return $this->hasGroup('Track Marshal');
+    }
+
+    /**
      * Redirect if user doesn't have permission.
      */
     public function requirePermission(string $slug): void {
         $this->requireLogin();
         if (!$this->hasPermission($slug)) {
-            if (function_exists('log_to_file')) {
+            if (function_exists('app_log')) {
+                $user = $this->getCurrentUser();
+                app_log('warning', 'Unauthorized permission access attempt', [
+                    'slug' => $slug,
+                    'user_email' => $user['email'] ?? null,
+                    'user_id' => $user['id'] ?? null,
+                ]);
+            } elseif (function_exists('log_to_file')) {
                 $user = $this->getCurrentUser();
                 log_to_file("Neoprávnený prístup k akcii '$slug' používateľom " . ($user['email'] ?? 'unknown'), 'WARNING');
             }
@@ -319,7 +385,16 @@ class AuthRepository {
                     }
                 }
             } catch (\Throwable $e) {
-                if (function_exists('log_to_file')) {
+                if (function_exists('app_log')) {
+                    app_log('error', 'Profile update error', [
+                        'exception_class' => get_class($e),
+                        'exception' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'user_id' => $currentUserId,
+                        'email' => $email,
+                    ]);
+                } elseif (function_exists('log_to_file')) {
                     log_to_file("Profile update error: " . $e->getMessage(), 'ERROR');
                 }
                 $errors['general'] = "Interná chyba pri aktualizácii profilu.";

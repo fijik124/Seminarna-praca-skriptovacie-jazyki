@@ -23,29 +23,13 @@
         <li class="nav-item">
           <a class="nav-link px-3 fw-medium position-relative nav-hover-effect" href="<?= url('tracks') ?>">Trate</a>
         </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle px-3 fw-medium" href="#" data-bs-toggle="dropdown">Services</a>
-          <ul class="dropdown-menu dropdown-menu-dark shadow-lg border-secondary mt-3 animate slideIn">
-            <li><a class="dropdown-item py-2" href="<?= url('tracks') ?>"><i class="fas fa-layer-group me-2 opacity-50"></i>Tracks</a></li>
-            <li><a class="dropdown-item py-2" href="<?= url('about') ?>"><i class="fas fa-database me-2 opacity-50"></i>About Project</a></li>
-            <li><hr class="dropdown-divider border-secondary"></li>
-            <li><a class="dropdown-item py-2 text-danger" href="<?= url('contact') ?>"><i class="fas fa-bug me-2 opacity-50"></i>Report Bug</a></li>
-          </ul>
+        <li class="nav-item">
+          <a class="nav-link px-3 fw-medium position-relative nav-hover-effect" href="<?= url('events') ?>">Events</a>
         </li>
       </ul>
       
       <div class="d-flex align-items-center gap-3">
-        <form class="d-none d-xl-flex" role="search" aria-label="Site search">
-          <label for="public_nav_search" class="visually-hidden">Search notes</label>
-          <div class="input-group">
-            <span class="input-group-text bg-dark border-secondary text-secondary border-end-0 rounded-start-pill px-3">
-                <i class="fas fa-search"></i>
-            </span>
-            <input class="form-control bg-dark border-secondary text-white border-start-0 rounded-end-pill ps-0" 
-                   id="public_nav_search"
-                   name="q" type="search" placeholder="Search notes..." aria-label="Search notes" style="width: 150px;">
-          </div>
-        </form>
+
         
         <div class="d-flex gap-2 align-items-center">
           <?php if (isset($_SESSION['user'])): ?>

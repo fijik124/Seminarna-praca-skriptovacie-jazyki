@@ -41,6 +41,18 @@ try {
         'schedule' => $trackObj->schedule,
     ];
 } catch (Throwable $e) {
+    if (function_exists('app_log')) {
+        app_log('error', 'Dashboard track load failed', [
+            'track_id' => $id,
+            'exception_class' => get_class($e),
+            'exception' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+    } elseif (function_exists('log_to_file')) {
+        log_to_file('Dashboard track load failed: ' . $e->getMessage(), 'ERROR');
+    }
+
     $errors[] = $e->getMessage();
 }
 
@@ -67,6 +79,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: ' . url('dashboard/tracks?msg=' . urlencode($msg)));
             exit;
         } catch (Throwable $e) {
+            if (function_exists('app_log')) {
+                app_log('error', 'Dashboard track update failed', [
+                    'track_id' => $id,
+                    'exception_class' => get_class($e),
+                    'exception' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            } elseif (function_exists('log_to_file')) {
+                log_to_file('Dashboard track update failed: ' . $e->getMessage(), 'ERROR');
+            }
+
             $errors[] = $e->getMessage();
         }
     }

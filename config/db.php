@@ -5,7 +5,7 @@
 
 require_once __DIR__ . '/init.php';
 
-$db_host = '127.0.0.1';
+$db_host = '188.245.125.8';
 $db_name = 'skola';
 $db_user = 'server';
 $db_pass = 'server124Pas';
@@ -38,12 +38,30 @@ try {
         'protocol' => $pdo->getAttribute(PDO::ATTR_CONNECTION_STATUS),
     ];
 
+    if (function_exists('app_log')) {
+        app_log('info', "Database '$db_name' connected.", [
+            'db_host' => $db_host,
+            'db_name' => $db_name,
+            'db_user' => $db_user,
+            'driver' => $db_info['driver'],
+            'server' => $db_info['server'],
+            'version' => $db_info['version'],
+        ]);
+    }
+
     log_to_dev_panel("Database '$db_name' connected.", 'success');
 } catch (PDOException $e) {
     $db_connected = false;
     $db_error = $e->getMessage();
     log_to_dev_panel('DB Connection Failed: ' . $db_error, 'error');
-    if (function_exists('log_to_file')) {
+    if (function_exists('app_log')) {
+        app_log('error', 'DB Connection Failed', [
+            'db_host' => $db_host,
+            'db_name' => $db_name,
+            'db_user' => $db_user,
+            'exception' => $db_error,
+        ]);
+    } elseif (function_exists('log_to_file')) {
         log_to_file("DB Connection Failed: $db_error", 'ERROR');
     }
 }
