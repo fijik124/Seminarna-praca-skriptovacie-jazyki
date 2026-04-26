@@ -11,7 +11,95 @@ spl_autoload_register(function ($class) {
     }
 });
 
-define('DEV_MODE', true);
+if (!function_exists('app_env_load_file')) {
+    function app_env_load_file(?string $filePath = null): void {
+        static $loadedFiles = [];
+
+        $filePath = $filePath ?: dirname(__DIR__) . '/.env';
+        $realPath = realpath($filePath) ?: $filePath;
+
+        if (isset($loadedFiles[$realPath]) || !is_file($filePath) || !is_readable($filePath)) {
+            return;
+        }
+
+        $loadedFiles[$realPath] = true;
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if ($lines === false) {
+            return;
+        }
+
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+
+            $parts = explode('=', $line, 2);
+            if (count($parts) !== 2) {
+                continue;
+            }
+
+            $key = trim($parts[0]);
+            if ($key === '') {
+                continue;
+            }
+
+            $value = trim($parts[1]);
+            $len = strlen($value);
+            if ($len >= 2) {
+                $first = $value[0];
+                $last = $value[$len - 1];
+                if (($first === '"' && $last === '"') || ($first === "'" && $last === "'")) {
+                    $value = substr($value, 1, -1);
+                }
+            }
+
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
+            putenv($key . '=' . $value);
+        }
+    }
+}
+
+if (!function_exists('app_env')) {
+    function app_env(string $key, $default = null) {
+        $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
+        if ($value === false || $value === null || $value === '') {
+            return $default;
+        }
+
+        return $value;
+    }
+}
+
+if (!function_exists('app_env_bool')) {
+    function app_env_bool(string $key, bool $default = false): bool {
+        $value = app_env($key, null);
+        if ($value === null) {
+            return $default;
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        $normalized = strtolower(trim((string) $value));
+        if (in_array($normalized, ['1', 'true', 'yes', 'on'], true)) {
+            return true;
+        }
+
+        if (in_array($normalized, ['0', 'false', 'no', 'off'], true)) {
+            return false;
+        }
+
+        return $default;
+    }
+}
+
+app_env_load_file();
+
+define('DEV_MODE', app_env_bool('DEV_MODE', true));
 
 if (!isset($debug_logs) || !is_array($debug_logs)) {
     $debug_logs = [];

@@ -5,21 +5,23 @@
 
 require_once __DIR__ . '/init.php';
 
-$db_host = '188.245.125.8';
-$db_name = 'skola';
-$db_user = 'server';
-$db_pass = 'server124Pas';
+$db_host = (string) app_env('DB_HOST', '127.0.0.1');
+$db_port = (string) app_env('DB_PORT', '3306');
+$db_name = (string) app_env('DB_NAME', 'name');
+$db_user = (string) app_env('DB_USER', 'user');
+$db_pass = (string) app_env('DB_PASSWORD', 'pass');
 $db_connected = false;
 $db_info = [
     'status' => 'Disconnected',
     'host' => $db_host,
+    'port' => $db_port,
     'name' => $db_name,
     'user' => $db_user,
 ];
 $db_error = null;
 
 try {
-    $dsn = "mysql:host=$db_host;dbname=$db_name;charset=utf8mb4";
+    $dsn = "mysql:host=$db_host;port=$db_port;dbname=$db_name;charset=utf8mb4";
     $pdo = new PDO($dsn, $db_user, $db_pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -30,6 +32,7 @@ try {
     $db_info = [
         'status' => 'Connected',
         'host' => $db_host,
+        'port' => $db_port,
         'name' => $db_name,
         'user' => $db_user,
         'driver' => $pdo->getAttribute(PDO::ATTR_DRIVER_NAME),
@@ -41,6 +44,7 @@ try {
     if (function_exists('app_log')) {
         app_log('info', "Database '$db_name' connected.", [
             'db_host' => $db_host,
+            'db_port' => $db_port,
             'db_name' => $db_name,
             'db_user' => $db_user,
             'driver' => $db_info['driver'],
@@ -57,6 +61,7 @@ try {
     if (function_exists('app_log')) {
         app_log('error', 'DB Connection Failed', [
             'db_host' => $db_host,
+            'db_port' => $db_port,
             'db_name' => $db_name,
             'db_user' => $db_user,
             'exception' => $db_error,

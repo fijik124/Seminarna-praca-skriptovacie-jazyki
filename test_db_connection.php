@@ -8,14 +8,18 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-$db_host = '127.0.0.1';
-$db_name = 'skola';
-$db_user = 'server';
-$db_pass = 'server124Pas';
+require_once __DIR__ . '/config/init.php';
+
+$db_host = (string) app_env('DB_HOST', '127.0.0.1');
+$db_port = (string) app_env('DB_PORT', '3306');
+$db_name = (string) app_env('DB_NAME', 'skola');
+$db_user = (string) app_env('DB_USER', 'server');
+$db_pass = (string) app_env('DB_PASSWORD', '');
 
 echo "<h1>Database Connection Test</h1>";
 echo "<pre>";
 echo "Host: $db_host\n";
+echo "Port: $db_port\n";
 echo "Database: $db_name\n";
 echo "User: $db_user\n";
 echo "Password: " . (strlen($db_pass) > 0 ? '[set]' : '[empty]') . "\n\n";
@@ -32,7 +36,7 @@ if (in_array('mysql', $drivers)) {
 
 // Test 2: Try direct connection
 echo "\n=== Test 2: Direct PDO Connection ===\n";
-$dsn = "mysql:host=$db_host;charset=utf8mb4";
+$dsn = "mysql:host=$db_host;port=$db_port;charset=utf8mb4";
 try {
     $pdo = new PDO($dsn, $db_user, $db_pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -63,7 +67,7 @@ try {
     
     // Test 4: Try connecting with database selected
     echo "\n=== Test 4: Connection with Database Selected ===\n";
-    $dsn_with_db = "mysql:host=$db_host;dbname=$db_name;charset=utf8mb4";
+    $dsn_with_db = "mysql:host=$db_host;port=$db_port;dbname=$db_name;charset=utf8mb4";
     try {
         $pdo_with_db = new PDO($dsn_with_db, $db_user, $db_pass, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
