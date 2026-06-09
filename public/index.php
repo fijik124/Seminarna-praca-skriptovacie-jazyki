@@ -78,6 +78,13 @@
     if (function_exists('log_to_dev_panel')) {
         log_to_dev_panel("Page loaded", "success");
     }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($page === 'event') {
+        require __DIR__ . '/../templates/pages/event_post.php';
+    }
+}
+
     ?>
 
 <!DOCTYPE html>

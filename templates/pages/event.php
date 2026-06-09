@@ -7,7 +7,7 @@ if (!function_exists('event_detail_redirect')) {
     function event_detail_redirect(string $slug, array $payload = [], string $type = 'msg'): void {
         $query = ['event' => $slug];
         if (!empty($payload)) {
-            $query[$type] = urlencode(base64_encode(json_encode($payload)));
+            $query[$type] = base64_encode(json_encode($payload));
         }
 
         header('Location: ' . url('event?' . http_build_query($query)));
@@ -52,110 +52,26 @@ $canReviewRequests = $isLoggedIn && $auth->hasPermission('event_registration_req
 $flashMsg = event_detail_flash('msg');
 $flashError = event_detail_flash('error');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $event) {
-    $action = trim((string) ($_POST['action'] ?? ''));
-    $token = trim((string) ($_POST['idempotency_token'] ?? ''));
-
-    if (!app_consume_idempotency_token('event_detail_' . $event->slug, $token)) {
-        event_detail_redirect($event->slug, ['type' => 'info', 'text' => 'Action was already processed or expired. Please try again.']);
-    }
-
-    try {
-        $handled = false;
-
-        if ($action === 'send_message') {
-            $handled = true;
-            $auth->requireLogin();
-            $subject = trim((string) ($_POST['subject'] ?? ''));
-            $message = trim((string) ($_POST['message'] ?? ''));
-
-            if ($message === '') {
-                event_detail_redirect($event->slug, ['type' => 'error', 'text' => 'Message text is required.'], 'error');
-            }
-
-            if ($subject === '') {
-                $subject = 'Message about ' . $event->title;
-            }
-
-            $events->addMessage(
-                (int) $event->id,
-                (int) $currentUser['id'],
-                (string) ($currentUser['first_name'] . ' ' . $currentUser['last_name']),
-                (string) ($currentUser['email'] ?? ''),
-                $subject,
-                $message
-            );
-            event_detail_redirect($event->slug, ['type' => 'success', 'text' => 'Your message was sent to the event organizer.']);
-        }
-
-        if ($action === 'request_registration') {
-            $handled = true;
-            $auth->requirePermission('event_registration_request_create');
-            $note = trim((string) ($_POST['note'] ?? ''));
-            $result = $events->requestRegistration(
-                (int) $event->id,
-                (int) $currentUser['id'],
-                (string) ($currentUser['first_name'] ?? ''),
-                (string) ($currentUser['last_name'] ?? ''),
-                (string) ($currentUser['email'] ?? ''),
-                $note
-            );
-
-            if (!empty($result['created'])) {
-                event_detail_redirect($event->slug, ['type' => 'success', 'text' => 'Your marshal registration request is pending organizer approval.']);
-            }
-
-            event_detail_redirect($event->slug, ['type' => 'info', 'text' => 'You already have a registration request on this event.']);
-        }
-
-        if ($action === 'review_registration') {
-            $handled = true;
-            $auth->requirePermission('event_registration_request_review');
-            $requestId = (int) ($_POST['request_id'] ?? 0);
-            $decision = trim((string) ($_POST['decision'] ?? ''));
-            $reviewNote = trim((string) ($_POST['review_note'] ?? ''));
-
-            if ($requestId <= 0 || !in_array($decision, ['approved', 'rejected'], true)) {
-                event_detail_redirect($event->slug, ['type' => 'error', 'text' => 'Invalid review request.'], 'error');
-            }
-
-            if ($events->reviewRegistrationRequest($requestId, (int) $currentUser['id'], $decision, $reviewNote)) {
-                event_detail_redirect($event->slug, ['type' => 'success', 'text' => 'Registration request updated.']);
-            }
-
-            event_detail_redirect($event->slug, ['type' => 'error', 'text' => 'Unable to update registration request.'], 'error');
-        }
-
-        if (!$handled) {
-            event_detail_redirect($event->slug, ['type' => 'error', 'text' => 'Unknown action.'], 'error');
-        }
-    } catch (Throwable $e) {
-        if (function_exists('app_log')) {
-            app_log('error', 'Event detail action failed', [
-                'event_slug' => $event->slug,
-                'action' => $action,
-                'exception_class' => get_class($e),
-                'exception' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-        }
-
-        event_detail_redirect($event->slug, ['type' => 'error', 'text' => 'Something went wrong while processing your request.'], 'error');
-    }
-}
-
 $userMessages = [];
 $userRegistration = null;
-$pendingRequests = [];
+$registrationRequests = [];
+$repliesByMessage = [];
 
 if ($event && $isLoggedIn && $currentUser) {
     $userMessages = $events->getMessagesForEvent((int) $event->id, (int) $currentUser['id']);
     $userRegistration = $events->getRegistrationRequestForUser((int) $event->id, (int) $currentUser['id']);
+
+    foreach ($userMessages as $message) {
+        $messageId = (int) ($message['id'] ?? 0);
+
+        if ($messageId > 0) {
+            $repliesByMessage[$messageId] = $events->getMessageReplies($messageId);
+        }
+    }
 }
 
 if ($event && $canReviewRequests) {
-    $pendingRequests = $events->getPendingRegistrationRequests((int) $event->id);
+    $registrationRequests = $events->getAllRegistrationRequests((int) $event->id);
 }
 ?>
 <main data-bs-theme="dark" class="bg-dark text-light min-vh-100">
@@ -253,7 +169,12 @@ if ($event && $canReviewRequests) {
                                     <h2 class="h5 fw-bold mb-3 mt-4">Track marshal registration</h2>
                                     <?php if ($userRegistration && in_array($userRegistration['status'], ['pending', 'approved'], true)): ?>
                                         <div class="alert alert-warning">
-                                            Your registration request is currently <strong><?= htmlspecialchars($userRegistration['status'], ENT_QUOTES, 'UTF-8') ?></strong>.
+                                            <?php if (!empty($userRegistration['review_note'])): ?>
+                                                <div class="mt-2">
+                                                    Organizer note:
+                                                    <strong><?= nl2br(htmlspecialchars($userRegistration['review_note'], ENT_QUOTES, 'UTF-8')) ?></strong>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
 
@@ -283,7 +204,24 @@ if ($event && $canReviewRequests) {
                                                     <strong><?= htmlspecialchars($message['subject'], ENT_QUOTES, 'UTF-8') ?></strong>
                                                     <small class="text-secondary"><?= htmlspecialchars($message['created_at'], ENT_QUOTES, 'UTF-8') ?></small>
                                                 </div>
-                                                <p class="text-secondary mb-0 mt-2"><?= nl2br(htmlspecialchars($message['message'], ENT_QUOTES, 'UTF-8')) ?></p>
+                                                <?php if (!empty($repliesByMessage[$message['id']])): ?>
+                                                    <div class="mt-3 ps-3 border-start border-info">
+                                                        <div class="small text-info fw-bold mb-2">Organizer replies</div>
+
+                                                        <?php foreach ($repliesByMessage[$message['id']] as $reply): ?>
+                                                            <div class="mb-2">
+                                                                <div class="small text-info">
+                                                                    <?= htmlspecialchars(trim(($reply['first_name'] ?? '') . ' ' . ($reply['last_name'] ?? '')), ENT_QUOTES, 'UTF-8') ?>
+                                                                    ·
+                                                                    <?= htmlspecialchars($reply['created_at'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                                                </div>
+                                                                <div class="small text-secondary">
+                                                                    <?= nl2br(htmlspecialchars($reply['reply_body'] ?? '', ENT_QUOTES, 'UTF-8')) ?>
+                                                                </div>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
@@ -303,39 +241,93 @@ if ($event && $canReviewRequests) {
                         <?php if ($canReviewRequests): ?>
                             <div class="card bg-body-tertiary border-secondary border-opacity-25">
                                 <div class="card-body p-4">
-                                    <h2 class="h5 fw-bold mb-3">Pending marshal requests</h2>
-                                    <?php if (!$pendingRequests): ?>
-                                        <div class="text-secondary">No pending requests right now.</div>
+                                    <h2 class="h5 fw-bold mb-3">Marshal requests</h2>
+                                    <?php if (!$registrationRequests): ?>
+                                        <div class="text-secondary">No marshal requests yet.</div>
                                     <?php else: ?>
                                         <div class="d-grid gap-3">
-                                            <?php foreach ($pendingRequests as $request): ?>
+                                            <?php foreach ($registrationRequests as $request): ?>
                                                 <div class="p-3 rounded border border-secondary">
                                                     <div class="d-flex justify-content-between gap-2 mb-2">
                                                         <strong><?= htmlspecialchars($request['first_name'] . ' ' . $request['last_name'], ENT_QUOTES, 'UTF-8') ?></strong>
-                                                        <span class="badge text-bg-warning">Pending</span>
+                                                        <span class="badge <?= $request['status'] === 'approved' ? 'text-bg-success' : ($request['status'] === 'rejected' ? 'text-bg-danger' : 'text-bg-warning') ?>">
+    <?= htmlspecialchars(ucfirst($request['status']), ENT_QUOTES, 'UTF-8') ?>
+</span>
                                                     </div>
                                                     <div class="small text-secondary mb-2"><?= htmlspecialchars($request['email'], ENT_QUOTES, 'UTF-8') ?></div>
                                                     <?php if (!empty($request['note'])): ?>
-                                                        <p class="small text-secondary mb-3"><?= nl2br(htmlspecialchars($request['note'], ENT_QUOTES, 'UTF-8')) ?></p>
+                                                        <p class="small text-secondary mb-3">
+                                                            <?= nl2br(htmlspecialchars($request['note'], ENT_QUOTES, 'UTF-8')) ?>
+                                                        </p>
                                                     <?php endif; ?>
-                                                    <form method="post" class="d-flex flex-column gap-2">
-                                                        <input type="hidden" name="action" value="review_registration">
-                                                        <input type="hidden" name="request_id" value="<?= (int) $request['id'] ?>">
-                                                        <input type="hidden" name="decision" value="approved">
-                                                        <?= event_detail_token_field($event->slug) ?>
-                                                        <label class="visually-hidden" for="review_note_approve_<?= (int) $request['id'] ?>">Approval note</label>
-                                                        <input id="review_note_approve_<?= (int) $request['id'] ?>" type="text" name="review_note" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Optional approval note">
-                                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
-                                                    </form>
-                                                    <form method="post" class="d-flex flex-column gap-2 mt-2">
-                                                        <input type="hidden" name="action" value="review_registration">
-                                                        <input type="hidden" name="request_id" value="<?= (int) $request['id'] ?>">
-                                                        <input type="hidden" name="decision" value="rejected">
-                                                        <?= event_detail_token_field($event->slug) ?>
-                                                        <label class="visually-hidden" for="review_note_reject_<?= (int) $request['id'] ?>">Rejection note</label>
-                                                        <input id="review_note_reject_<?= (int) $request['id'] ?>" type="text" name="review_note" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Optional rejection note">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
-                                                    </form>
+
+                                                    <?php if (($request['status'] ?? '') === 'pending'): ?>
+
+                                                        <form method="post" class="d-flex flex-column gap-2">
+                                                            <input type="hidden" name="action" value="review_registration">
+                                                            <input type="hidden" name="request_id" value="<?= (int) $request['id'] ?>">
+                                                            <input type="hidden" name="decision" value="approved">
+
+                                                            <?= event_detail_token_field($event->slug) ?>
+
+                                                            <label class="visually-hidden"
+                                                                   for="review_note_approve_<?= (int) $request['id'] ?>">
+                                                                Approval note
+                                                            </label>
+
+                                                            <input
+                                                                    id="review_note_approve_<?= (int) $request['id'] ?>"
+                                                                    type="text"
+                                                                    name="review_note"
+                                                                    class="form-control form-control-sm bg-dark text-light border-secondary"
+                                                                    placeholder="Optional approval note">
+
+                                                            <button type="submit" class="btn btn-sm btn-success">
+                                                                Approve
+                                                            </button>
+                                                        </form>
+
+                                                        <form method="post" class="d-flex flex-column gap-2 mt-2">
+                                                            <input type="hidden" name="action" value="review_registration">
+                                                            <input type="hidden" name="request_id" value="<?= (int) $request['id'] ?>">
+                                                            <input type="hidden" name="decision" value="rejected">
+
+                                                            <?= event_detail_token_field($event->slug) ?>
+
+                                                            <label class="visually-hidden"
+                                                                   for="review_note_reject_<?= (int) $request['id'] ?>">
+                                                                Rejection note
+                                                            </label>
+
+                                                            <input
+                                                                    id="review_note_reject_<?= (int) $request['id'] ?>"
+                                                                    type="text"
+                                                                    name="review_note"
+                                                                    class="form-control form-control-sm bg-dark text-light border-secondary"
+                                                                    placeholder="Optional rejection note">
+
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                Reject
+                                                            </button>
+                                                        </form>
+
+                                                    <?php else: ?>
+
+                                                        <?php if (!empty($request['review_note'])): ?>
+                                                            <div class="small text-info mt-2">
+                                                                Review note:
+                                                                <?= nl2br(htmlspecialchars($request['review_note'], ENT_QUOTES, 'UTF-8')) ?>
+                                                            </div>
+                                                        <?php endif; ?>
+
+                                                        <?php if (!empty($request['reviewed_at'])): ?>
+                                                            <div class="small text-secondary mt-1">
+                                                                Reviewed at:
+                                                                <?= htmlspecialchars($request['reviewed_at'], ENT_QUOTES, 'UTF-8') ?>
+                                                            </div>
+                                                        <?php endif; ?>
+
+                                                    <?php endif; ?>
                                                 </div>
                                             <?php endforeach; ?>
                                         </div>
