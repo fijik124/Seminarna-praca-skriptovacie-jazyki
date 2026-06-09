@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * ERROR_HANDLER.PHP - Register global error/exception/fatal handlers.
  */
@@ -8,8 +10,7 @@ require_once __DIR__ . '/../config/init.php';
 if (!defined('ERROR_HANDLERS_REGISTERED')) {
     define('ERROR_HANDLERS_REGISTERED', true);
 
-    // Ensure display_errors is off in production (or generally to avoid white page / leaked details)
-    // In dev mode we might want it on, but user specifically asked not to show white page.
+    // V produkcii nechceme vypisovať chyby do HTML (vytvára to záseky hlavičiek a biele stránky)
     ini_set('display_errors', '0');
     ini_set('log_errors', '1');
     error_reporting(E_ALL);
@@ -18,22 +19,24 @@ if (!defined('ERROR_HANDLERS_REGISTERED')) {
         /**
          * Log message to a file.
          */
-        function log_to_file($message, $level = 'ERROR', array $context = []) {
+        function log_to_file(string $message, string $level = 'ERROR', array $context = []): void {
             if (function_exists('app_log')) {
-                app_log((string) $level, (string) $message, $context);
+                app_log($level, $message, $context);
                 return;
             }
 
-            error_log(sprintf('[%s] [%s] %s', date('Y-m-d H:i:s'), strtoupper((string) $level), (string) $message));
+            error_log(sprintf('[%s] [%s] %s', date('Y-m-d H:i:s'), strtoupper($level), $message));
         }
     }
 
-    set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+    // 1. GLOBAL ERROR HANDLER
+    set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
         if (!(error_reporting() & $errno)) {
             return false;
         }
 
-        $errorTypes = [
+        // Moderné riešenie pomocou match() namiesto poľa. Vyhýbame sa priamemu zápisu E_STRICT.
+        $type = match ($errno) {
             E_ERROR             => 'Fatal Error',
             E_WARNING           => 'Warning',
             E_PARSE             => 'Parse Error',
@@ -48,57 +51,54 @@ if (!defined('ERROR_HANDLERS_REGISTERED')) {
             E_RECOVERABLE_ERROR => 'Recoverable Error',
             E_DEPRECATED        => 'Deprecated',
             E_USER_DEPRECATED   => 'User Deprecated',
-        ];
+            2048                => 'Strict Notice', // Použijeme priamo int hodnotu starého E_STRICT (bezpečné pre PHP 8.4+)
+            default             => 'Unknown Error',
+        };
 
-        // E_STRICT is deprecated since PHP 8.4, handle it safely
-        if (defined('E_STRICT')) {
-            $errorTypes[E_STRICT] = 'Strict Notice';
-        }
-
-        $type = $errorTypes[$errno] ?? 'Unknown Error';
         $message = "[$type] $errstr in $errfile on line $errline";
         $context = [
             'error_type' => $type,
-            'errno' => $errno,
-            'message' => $errstr,
-            'file' => $errfile,
-            'line' => $errline,
+            'errno'      => $errno,
+            'message'    => $errstr,
+            'file'       => $errfile,
+            'line'       => $errline,
         ];
 
-        $level = in_array($errno, [E_WARNING, E_USER_WARNING, E_NOTICE, E_USER_NOTICE, E_DEPRECATED, E_USER_DEPRECATED], true)
-            ? 'warning'
-            : 'error';
+        // Rozhodnutie o dôležitosti logu (LogLevel)
+        $level = match ($errno) {
+            E_WARNING, E_USER_WARNING, E_NOTICE, E_USER_NOTICE, E_DEPRECATED, E_USER_DEPRECATED, 2048 => 'warning',
+            default => 'error',
+        };
 
         log_to_file($message, $level, $context);
 
         if (function_exists('log_to_dev_panel')) {
-            log_to_dev_panel(
-                'PHP ' . $type . ': ' . $errstr,
-                $level,
-                function_exists('app_context_summary')
-                    ? app_context_summary($context)
-                    : ('File: ' . basename($errfile) . ' | Line: ' . $errline)
-            );
+            $summary = function_exists('app_context_summary')
+                ? app_context_summary($context)
+                : ('File: ' . basename($errfile) . ' | Line: ' . $errline);
+
+            log_to_dev_panel("PHP $type: $errstr", $level, $summary);
         }
 
-        // Only treat truly fatal user/recoverable errors as render-worthy here.
-        if (in_array($errno, [E_USER_ERROR, E_RECOVERABLE_ERROR], true)) {
+        // Ak ide o kritickú užívateľskú alebo obnoviteľnú chybu, renderujeme error page
+        if ($errno === E_USER_ERROR || $errno === E_RECOVERABLE_ERROR) {
             render_server_error_page('Kritická chyba aplikácie.');
         }
 
-        // Return true to prevent the standard PHP error handler from running
         return true;
     });
 
-    set_exception_handler(function ($e) {
+    // 2. GLOBAL EXCEPTION HANDLER
+    set_exception_handler(function (Throwable $e): void {
         $details = $e->getMessage() . "\nStack trace:\n" . $e->getTraceAsString();
         $message = "Uncaught Exception: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine();
+
         $context = [
-            'exception_class' => get_class($e),
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => $e->getTraceAsString(),
+            'exception_class' => $e::class, // Moderný zápis PHP 8.0+ namiesto get_class($e)
+            'message'         => $e->getMessage(),
+            'file'            => $e->getFile(),
+            'line'            => $e->getLine(),
+            'trace'           => $e->getTraceAsString(),
         ];
 
         log_to_file($message, 'EXCEPTION', $context);
@@ -110,34 +110,42 @@ if (!defined('ERROR_HANDLERS_REGISTERED')) {
         render_server_error_page('Aplikácia narazila na neočakávanú výnimku.');
     });
 
-    register_shutdown_function(function () {
+    // 3. SHUTDOWN FUNCTION (Pre zachytenie fatálnych pádov)
+    register_shutdown_function(function (): void {
         $error = error_get_last();
-        $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
 
-        if ($error && in_array($error['type'], $fatalTypes, true)) {
-            $details = sprintf(
-                'File: %s | Line: %d | Message: %s',
-                $error['file'],
-                $error['line'],
-                $error['message']
-            );
+        if ($error !== null) {
+            // Cez match overíme, či ide o fatálny typ chyby, ktorý spôsobil pád skriptu
+            $isFatal = match ($error['type']) {
+                E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR => true,
+                default => false,
+            };
 
-            log_to_file(
-                "Fatal Error: " . $error['message'] . " in " . $error['file'] . " on line " . $error['line'],
-                'FATAL',
-                [
-                    'fatal_type' => $error['type'],
-                    'file' => $error['file'],
-                    'line' => $error['line'],
-                    'message' => $error['message'],
-                ]
-            );
+            if ($isFatal) {
+                $details = sprintf(
+                    'File: %s | Line: %d | Message: %s',
+                    $error['file'],
+                    $error['line'],
+                    $error['message']
+                );
 
-            if (function_exists('log_to_dev_panel')) {
-                log_to_dev_panel('Fatal shutdown error occurred.', 'error', $details);
+                log_to_file(
+                    "Fatal Error: " . $error['message'] . " in " . $error['file'] . " on line " . $error['line'],
+                    'FATAL',
+                    [
+                        'fatal_type' => $error['type'],
+                        'file'       => $error['file'],
+                        'line'       => $error['line'],
+                        'message'    => $error['message'],
+                    ]
+                );
+
+                if (function_exists('log_to_dev_panel')) {
+                    log_to_dev_panel('Fatal shutdown error occurred.', 'error', $details);
+                }
+
+                render_server_error_page('Server narazil na fatálnu chybu pri ukončovaní.');
             }
-
-            render_server_error_page('Server narazil na fatálnu chybu pri ukončovaní.');
         }
     });
 }

@@ -74,6 +74,20 @@ $currentPageFile = $currentPage['template'];
 if (function_exists('log_to_dev_panel')) {
     log_to_dev_panel("Loaded dashboard page: " . $page, "success");
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    switch ($page) {
+
+        case 'events-view':
+
+            require __DIR__ .
+                    '/../../templates/dashboard/pages/events_view_post.php';
+
+            break;
+    }
+}
+
 ?>
 
 <!DOCTYPE html>

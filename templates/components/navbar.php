@@ -21,7 +21,7 @@
           <a class="nav-link px-3 fw-medium position-relative nav-hover-effect" href="<?= url('about') ?>">About</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link px-3 fw-medium position-relative nav-hover-effect" href="<?= url('tracks') ?>">Trate</a>
+          <a class="nav-link px-3 fw-medium position-relative nav-hover-effect" href="<?= url('tracks') ?>">Tracks</a>
         </li>
         <li class="nav-item">
           <a class="nav-link px-3 fw-medium position-relative nav-hover-effect" href="<?= url('events') ?>">Events</a>
