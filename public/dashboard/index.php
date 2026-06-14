@@ -85,6 +85,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     '/../../templates/dashboard/pages/events_view_post.php';
 
             break;
+        case 'tracks-create':
+
+            require __DIR__ .
+                    '/../../templates/dashboard/pages/tracks_create_post.php';
+
+            break;
     }
 }
 

@@ -31,7 +31,7 @@ try {
             </p>
             <div class="d-flex flex-wrap gap-3">
                 <a href="<?= url('signup') ?>" class="btn btn-primary btn-lg px-4">Join as Participant</a>
-                <a href="<?= url('contact') ?>" class="btn btn-outline-light btn-lg px-4">Contact Organizer</a>
+                <a href="<?= url('contact') ?>" class="btn btn-outline-light btn-lg px-4">Contact Us</a>
             </div>
         </div>
     </section>

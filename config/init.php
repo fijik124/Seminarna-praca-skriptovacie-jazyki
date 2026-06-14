@@ -99,7 +99,7 @@ if (!function_exists('app_env_bool')) {
 
 app_env_load_file();
 
-define('DEV_MODE', app_env_bool('DEV_MODE', true));
+define('DEV_MODE', app_env_bool('DEV_MODE', false));
 
 if (!isset($debug_logs) || !is_array($debug_logs)) {
     $debug_logs = [];

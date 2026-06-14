@@ -52,8 +52,6 @@ try {
             'version' => $db_info['version'],
         ]);
     }
-
-    log_to_dev_panel("Database '$db_name' connected.", 'success');
 } catch (PDOException $e) {
     $db_connected = false;
     $db_error = $e->getMessage();
