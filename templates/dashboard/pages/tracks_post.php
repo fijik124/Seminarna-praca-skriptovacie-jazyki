@@ -1,4 +1,13 @@
 <?php
+use Repository\TrackRepository;
+use Repository\AuthRepository;
+use Entity\Track;
+
+$authRepo = new AuthRepository();
+$authRepo->requireLogin();
+
+$trackRepo = new TrackRepository();
+
 // ==========================================
 // ACTION: POST ROUTE INTERCEPTOR (DELETE)
 // ==========================================
