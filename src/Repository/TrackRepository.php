@@ -146,12 +146,6 @@ class TrackRepository {
         return $normalized;
     }
 
-    public function delete(int $id): bool {
-    /** @noinspection SqlResolve */
-    $stmt = $this->db->prepare('DELETE FROM `tracks` WHERE id = :id');
-    return $stmt->execute(['id' => $id]);
-    }
-
     public function validate(array $post): array {
         $errors = [];
         $allowedTags = self::getDefaultTags();
